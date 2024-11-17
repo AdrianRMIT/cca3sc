@@ -181,18 +181,25 @@ def user_profile(user_email):
 
 @app.route('/delete_photo/<user_email>/<image_id>', methods=['POST'])
 def delete_photo(user_email, image_id):
-    if 'user_email' not in session or session['user_email'] != user_email:
-        return redirect(url_for('login'))
     try:
-        photos_table.delete_item(
-            Key={
-                'user_email': user_email,
-                'image_id': image_id
-            }
-        )
+        possible_extensions = ['jpg', 'png', 'jpeg']
+
+        for ext in possible_extensions:
+            s3_key = f"{user_email}/{image_id}.{ext}"
+            try:
+                s3.delete_object(Bucket=S3_BUCKET_NAME, Key=s3_key)
+                print(f"Tried deleting: {s3_key}")
+            except Exception as e:
+                print(f"Error while trying to delete {s3_key}: {e}")
+                continue  
+
+        # Delete the entry from DynamoDB
+        photos_table.delete_item(Key={'user_email': user_email, 'image_id': image_id})
+        print(f"Deleted DynamoDB entry for image_id: {image_id}")
+        
         return redirect(url_for('user_profile', user_email=user_email))
     except Exception as e:
-        print(f"Error deleting photo {image_id} for user {user_email}: {e}")
+        print(f"Error in delete_photo function: {e}")
         return redirect(url_for('user_profile', user_email=user_email))
 
 if __name__ == "__main__":
