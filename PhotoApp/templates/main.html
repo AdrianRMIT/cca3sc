@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Main Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <header>
+        <h1>Welcome, {{ user_name }}</h1>
+        <nav>
+            <a href="{{ url_for('user_profile', user_email=session['user_email']) }}">My Photos</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
+    </header>
+    
+
+    {% if message %}
+    <p style="color: green;">{{ message }}</p>
+    {% endif %}
+
+    <section>
+        <h2>Upload an Image</h2>
+        <form action="{{ url_for('upload_image') }}" method="post" enctype="multipart/form-data">
+            <label for="camera">Camera:</label>
+            <input type="text" id="camera" name="camera" required>
+            <br><br>
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" required>
+            <br><br>
+            <label for="focal_length">Focal Length (35mm Equiv):</label>
+            <input type="number" id="focal_length" name="focal_length" required>
+            <br><br>
+            <label for="file">Choose an image:</label>
+            <input type="file" id="file" name="file" accept="image/*" required>
+            <br><br>
+            <button type="submit">Upload</button>
+        </form>
+    </section>
+
+    <section>
+        <h2>Search for Images</h2>
+        <form action="{{ url_for('query_images') }}" method="post">
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location">
+            <br><br>
+            <label for="camera">Camera:</label>
+            <input type="text" id="camera" name="camera">
+            <br><br>
+            <label for="focal_length">Focal Length (35mm Equiv):</label>
+            <input type="number" id="focal_length" name="focal_length">
+            <br><br>
+            <button type="submit">Search</button>
+        </form>
+    </section>
+
+    <section>
+        <h2>Search Results</h2>
+        {% if search_performed %}
+        {% if query_results %}
+        {% for photo in query_results %}
+        <div class="card">
+            <img src="{{ photo.s3_url }}" alt="Queried Image">
+            <h3>{{ photo.camera }} ({{ photo.focal_length_35mm_equiv }}mm) - {{ photo.location }}</h3>
+            <p>Uploaded by: <a href="{{ url_for('user_profile', user_email=photo.user_email) }}">{{ photo.user_email }}</a></p>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p style="color: red;">No results found.</p>
+        {% endif %}
+        {% endif %}
+    </section>
+</body>
+
+</html>

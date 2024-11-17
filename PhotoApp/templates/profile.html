@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <header>
+        <h1>Photos Uploaded by {{ user_email }}</h1>
+        <nav>
+            <a href="{{ url_for('main') }}">Back to Main</a>
+        </nav>
+    </header>
+
+    <section>
+        {% if photos %}
+            {% for photo in photos %}
+            <div class="card">
+                <img src="{{ photo.s3_url }}" alt="Uploaded Image">
+                <h3>{{ photo.camera }} ({{ photo.focal_length_35mm_equiv }}mm) - {{ photo.location }}</h3>
+                {% if is_owner %}
+                <form action="{{ url_for('delete_photo', user_email=user_email, image_id=photo.image_id) }}" method="post">
+                    <button type="submit" class="delete-button">Delete</button>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+        <p style="color: red;">No images posted by this user.</p>
+        {% endif %}
+    </section>
+</body>
+
+</html>
